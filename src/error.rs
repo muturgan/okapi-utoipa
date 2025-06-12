@@ -11,6 +11,7 @@ use axum::{
 use okapi_operation::{
 	JsonSchema, ToResponses,
 	okapi::openapi3::{RefOr, Response as OpenApiResponse, Responses},
+	schemars::Map,
 	*,
 };
 use serde::Serialize;
@@ -36,11 +37,18 @@ impl IntoResponse for ApiError {
 
 impl ToResponses for ApiError {
 	fn generate(_components: &mut Components) -> Result<Responses, anyhow::Error> {
-		Ok(Responses {
-			default: Some(RefOr::Object(OpenApiResponse {
+		let mut responses: Map<String, RefOr<OpenApiResponse>> = Default::default();
+
+		responses.insert(
+			StatusCode::INTERNAL_SERVER_ERROR.to_string(),
+			RefOr::Object(OpenApiResponse {
 				description: "ApiError".into(),
 				..Default::default()
-			})),
+			}),
+		);
+
+		Ok(Responses {
+			responses,
 			..Default::default()
 		})
 	}
