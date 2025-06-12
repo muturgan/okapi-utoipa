@@ -1,3 +1,6 @@
+# generated openapi schema
+openapi.json
+
 # dotenv environment variables file
 .env
 .env.test

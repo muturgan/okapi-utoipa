@@ -1,4 +1,0 @@
-#!/bin/sh
-if git diff --staged --name-only | grep -q '\.rs$'; then
-	sh scripts.sh lint
-fi
