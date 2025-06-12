@@ -5,6 +5,8 @@ use okapi_operation::{JsonSchema, *};
 use serde::{Deserialize, Serialize};
 use tokio::sync::RwLock;
 
+use crate::error::ApiError;
+
 pub(crate) type AppStateInner = Arc<RwLock<Vec<User>>>;
 pub(crate) type AppState = State<AppStateInner>;
 
@@ -33,9 +35,9 @@ pub struct Success {
 }
 
 #[openapi(summary = "Get users list", tags = "users")]
-pub(crate) async fn get_users_list(State(state): AppState) -> Json<Vec<User>> {
+pub(crate) async fn get_users_list(State(state): AppState) -> Result<Json<Vec<User>>, ApiError> {
 	let store = state.read().await;
-	store.clone().into()
+	Ok(store.clone().into())
 }
 
 #[openapi(summary = "Get user by id", tags = "users")]

@@ -1,3 +1,4 @@
+pub mod error;
 #[cfg(not(feature = "generate"))]
 mod openapi;
 pub mod router;
