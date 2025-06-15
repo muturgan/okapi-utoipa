@@ -4,7 +4,6 @@ use axum::Router as AxumRouter;
 use okapi_operation::{
 	axum_integration::{Router as OkapiRouter, get},
 	oh,
-	okapi::openapi3::OpenApi as OkapiSpec,
 };
 use utoipa::openapi::OpenApi as UtoipaSpec;
 use utoipa_swagger_ui::SwaggerUi;
@@ -12,7 +11,7 @@ use utoipa_swagger_ui::SwaggerUi;
 use crate::users::{self as U, AppStateInner};
 
 pub fn create_router(state: AppStateInner) -> Result<AxumRouter, Box<dyn Error>> {
-	let router = OkapiRouter::new()
+	let okapi_router = OkapiRouter::new()
 		.nest(
 			"/api",
 			OkapiRouter::new().nest(
@@ -32,23 +31,24 @@ pub fn create_router(state: AppStateInner) -> Result<AxumRouter, Box<dyn Error>>
 		)
 		.with_state(state);
 
-	let mut spec = router
+	let spec = generate_spec(&okapi_router)?;
+
+	let axum_router = okapi_router.axum_router();
+
+	let axum_router = axum_router.merge(SwaggerUi::new("/swagger").url("/swagger.json", spec));
+
+	Ok(axum_router)
+}
+
+fn generate_spec(router: &OkapiRouter) -> Result<UtoipaSpec, Box<dyn Error>> {
+	let mut okapi_spec = router
 		.generate_openapi_builder()
 		.title(env!("CARGO_PKG_NAME"))
 		.version(env!("CARGO_PKG_VERSION"))
 		.build()?;
-	spec.openapi = "3.1.0".into(); // utoipa requirement
+	okapi_spec.openapi = "3.1.0".into(); // utoipa requirement
 
-	let spec = convert_spec(spec)?;
-
-	let router = router.axum_router();
-
-	let router = router.merge(SwaggerUi::new("/swagger").url("/swagger.json", spec));
-
-	Ok(router)
-}
-
-fn convert_spec(okapi_spec: OkapiSpec) -> Result<UtoipaSpec, serde_json::Error> {
 	let spec = serde_json::to_string(&okapi_spec)?;
-	serde_json::from_str::<UtoipaSpec>(&spec)
+
+	serde_json::from_str::<UtoipaSpec>(&spec).map_err(Into::into)
 }
