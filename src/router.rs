@@ -2,23 +2,22 @@ use std::error::Error;
 
 use axum::Router as AxumRouter;
 use okapi_operation::{
-	axum_integration::{Router, get},
+	axum_integration::{Router as OkapiRouter, get},
 	oh,
+	okapi::openapi3::OpenApi as OkapiSpec,
 };
+use utoipa::openapi::OpenApi as UtoipaSpec;
 use utoipa_swagger_ui::SwaggerUi;
 
-use crate::{
-	openapi::convert_spec,
-	users::{self as U, AppStateInner},
-};
+use crate::users::{self as U, AppStateInner};
 
 pub fn create_router(state: AppStateInner) -> Result<AxumRouter, Box<dyn Error>> {
-	let router = Router::new()
+	let router = OkapiRouter::new()
 		.nest(
 			"/api",
-			Router::new().nest(
+			OkapiRouter::new().nest(
 				"/v1",
-				Router::new()
+				OkapiRouter::new()
 					.route(
 						"/users",
 						get(oh!(U::get_users_list)).post(oh!(U::create_user)),
@@ -47,4 +46,9 @@ pub fn create_router(state: AppStateInner) -> Result<AxumRouter, Box<dyn Error>>
 	let router = router.merge(SwaggerUi::new("/swagger").url("/swagger.json", spec));
 
 	Ok(router)
+}
+
+fn convert_spec(okapi_spec: OkapiSpec) -> Result<UtoipaSpec, serde_json::Error> {
+	let spec = serde_json::to_string(&okapi_spec)?;
+	serde_json::from_str::<UtoipaSpec>(&spec)
 }
