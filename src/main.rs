@@ -2,7 +2,6 @@ use std::error::Error;
 
 use okapi_utoipa::{router::create_router, users::User};
 
-// cargo run --package okapi-utoipa --bin okapi-utoipa
 #[tokio::main]
 async fn main() -> Result<(), Box<dyn Error>> {
 	let store = User::create_store();

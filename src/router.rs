@@ -5,12 +5,12 @@ use okapi_operation::{
 	axum_integration::{Router, get},
 	oh,
 };
-#[cfg(not(feature = "generate"))]
 use utoipa_swagger_ui::SwaggerUi;
 
-#[cfg(not(feature = "generate"))]
-use crate::openapi::get_schema;
-use crate::users::{self as U, AppStateInner};
+use crate::{
+	openapi::convert_spec,
+	users::{self as U, AppStateInner},
+};
 
 pub fn create_router(state: AppStateInner) -> Result<AxumRouter, Box<dyn Error>> {
 	let router = Router::new()
@@ -31,15 +31,20 @@ pub fn create_router(state: AppStateInner) -> Result<AxumRouter, Box<dyn Error>>
 					),
 			),
 		)
-		.with_state(state)
-		.finish_openapi(
-			"/openapi",
-			env!("CARGO_PKG_NAME"),
-			env!("CARGO_PKG_VERSION"),
-		)?;
+		.with_state(state);
 
-	#[cfg(not(feature = "generate"))]
-	let router = router.merge(SwaggerUi::new("/swagger").url("/swagger.json", get_schema()));
+	let mut spec = router
+		.generate_openapi_builder()
+		.title(env!("CARGO_PKG_NAME"))
+		.version(env!("CARGO_PKG_VERSION"))
+		.build()?;
+	spec.openapi = "3.1.0".into(); // utoipa requirement
+
+	let spec = convert_spec(spec)?;
+
+	let router = router.axum_router();
+
+	let router = router.merge(SwaggerUi::new("/swagger").url("/swagger.json", spec));
 
 	Ok(router)
 }

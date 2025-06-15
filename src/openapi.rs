@@ -1,10 +1,7 @@
-use ::std::fs;
-use utoipa::openapi::OpenApi;
+use okapi_operation::okapi::openapi3::OpenApi as OkapiSpec;
+use utoipa::openapi::OpenApi as UtoipaSpec;
 
-pub(crate) fn get_schema() -> OpenApi {
-	let str =
-		fs::read_to_string("openapi.json").expect("OpenAPI schema reading from file system failed");
-
-	serde_json::from_str::<OpenApi>(&str)
-		.unwrap_or_else(|err| panic!("OpenAPI schema parsing error: {err}"))
+pub(crate) fn convert_spec(okapi_spec: OkapiSpec) -> Result<UtoipaSpec, serde_json::Error> {
+	let spec = serde_json::to_string(&okapi_spec)?;
+	serde_json::from_str::<UtoipaSpec>(&spec)
 }

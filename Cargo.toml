@@ -13,14 +13,9 @@ codegen-units = 1
 
 [dependencies]
 axum = "0.8.4"
-axum-test = { version = "17.3.0", optional = true }
 okapi-operation = { version = "0.3.0", features = ["axum"] }
 serde = { version = "1.0.219", features = ["derive"] }
 serde_json = "1.0.140"
 tokio = { version = "1.45.1", features = ["full"] }
 utoipa = "5.3.1"
 utoipa-swagger-ui = { version = "9.0.2", features = ["axum"] }
-
-[features]
-default = []
-generate = ["axum-test"]
