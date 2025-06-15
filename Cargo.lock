@@ -789,7 +789,9 @@ dependencies = [
 
 [[package]]
 name = "okapi-operation"
-version = "0.3.0-rc4"
+version = "0.3.0"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "62b3ac29c4611a403bd1239d580058541b18984c2e603153f754c49993f0c080"
 dependencies = [
  "anyhow",
  "axum",
@@ -806,7 +808,9 @@ dependencies = [
 
 [[package]]
 name = "okapi-operation-macro"
-version = "0.3.0-rc4"
+version = "0.3.0"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "5391918a0c3a742ad2e76c69581e3b142795dc4c3f3c468f37acf92e434e6a2e"
 dependencies = [
  "darling",
  "proc-macro2",
